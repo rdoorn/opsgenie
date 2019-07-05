@@ -20,6 +20,7 @@ func main() {
 	arg := os.Args
 	if arg == nil || len(arg) == 1 {
 		help()
+		os.Exit(255)
 	}
 
 	config, err := findConfig()
@@ -34,6 +35,7 @@ func main() {
 
 	if len(arg) < 3 {
 		help()
+		os.Exit(255)
 	}
 
 	// attempt to read ID from 3rd parameter
@@ -87,11 +89,15 @@ func main() {
 		}
 	case "filter":
 		// filter xxx yyy zzz 1h
-		timeStr, restStr := parseArgs(arg[2:]...)
 		switch arg[2] {
-		case "regex":
+		case "match", "regex", "regexp":
+			timeStr, restStr := parseArgs(arg[3:]...)
 			err = h.filterRegex(restStr, timeStr)
+		case "contains":
+			timeStr, restStr := parseArgs(arg[3:]...)
+			err = h.filterContains(restStr, timeStr)
 		default:
+			timeStr, restStr := parseArgs(arg[2:]...)
 			err = h.filterContains(restStr, timeStr)
 		}
 	default:
@@ -129,6 +135,7 @@ func help() {
 	fmt.Printf("%s policy disable 1          - enable policy 1 for 1 hour\n", binary)
 
 	fmt.Printf("%s filter your filter 1h30m  - create a policy and enable it for 1 hour and 30 minutes\n", binary)
+	fmt.Printf("%s filter match '(myhost01[123]|myhost02[123])' 1d  - create a regular expression match \n", binary)
 	//fmt.Printf("%s filter your filter delete - disable and delete a policy created with this cli\n", binary)
 
 	fmt.Printf("%s help                      - your looking at it\n", binary)
