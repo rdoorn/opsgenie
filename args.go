@@ -11,7 +11,48 @@ import (
 func parseArgs(args ...string) (timeString string, rest string) {
 	//timeString = "24h"
 	str := []string{}
+	strLock := false
+	strLock2 := false
 	for _, a := range args {
+
+		// end of string "
+		if a[len(a)-1:] == "\"" && strLock == true {
+			str = append(str, a[:len(a)-1])
+			strLock = false
+			continue
+		}
+
+		// end of string ''
+		if a[len(a)-1:] == "'" && strLock2 == true {
+			str = append(str, a[:len(a)-1])
+			strLock2 = false
+			continue
+		}
+		// lock of "
+		if strLock {
+			str = append(str, a)
+			continue
+		}
+		// lock of '
+		if strLock2 {
+			str = append(str, a)
+			continue
+		}
+
+		// start of string "
+		if a[:1] == "\"" && strLock == false {
+			str = append(str, a[1:])
+			strLock = true
+			continue
+		}
+
+		// start of string '
+		if a[:1] == "'" && strLock2 == false {
+			str = append(str, a[1:])
+			strLock2 = true
+			continue
+		}
+
 		if isTime(a) {
 			timeString = a
 		} else {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -65,7 +66,31 @@ func TestAddTime(t *testing.T) {
 
 func TestParseArgs(t *testing.T) {
 
+	tests := map[string]struct {
+		r1 string
+		r2 string
+	}{
+		"server1 - down 10m":           {r1: "server1 - down", r2: "10m"},
+		"\"server1 - down\" 10m":       {r1: "server1 - down", r2: "10m"},
+		"'server1 - down' 10m":         {r1: "server1 - down", r2: "10m"},
+		"\"server1 'bla' - down\" 10m": {r1: "server1 'bla' - down", r2: "10m"},
+		"\"server1 down for 1d\" 10m":  {r1: "server1 down for 1d", r2: "10m"},
+		"server1 10m":                  {r1: "server1", r2: "10m"},
+	}
+
+	for str, r := range tests {
+		t.Run(fmt.Sprintf("ParseArgs/%s", str), func(t *testing.T) {
+			r2, r1 := parseArgs(strings.Split(str, " ")...)
+			assert.Equal(t, r.r1, r1)
+			assert.Equal(t, r.r2, r2)
+		})
+	}
+
 	timeStr, str := parseArgs([]string{"server1", "-", "down", "10m"}...)
+	assert.Equal(t, "server1 - down", str)
+	assert.Equal(t, "10m", timeStr)
+
+	timeStr, str = parseArgs([]string{"\"server1", "-", "down\"", "10m"}...)
 	assert.Equal(t, "server1 - down", str)
 	assert.Equal(t, "10m", timeStr)
 }
