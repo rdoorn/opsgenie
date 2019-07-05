@@ -3,6 +3,7 @@
 provides the following commands:
 
 | command                      | description |
+|---|---|
 |ops alert list                | list all alerts |
 |ops alert list 5h             | list all alerts in the past 5 hours |
 |ops alert ack 1               | acknowledge alert number 1 |
