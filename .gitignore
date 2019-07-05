@@ -12,3 +12,8 @@
 *.out
 
 .opscli
+opsginie
+*.rpm
+build/linux
+build/osx
+build/packages/opscli/usr/sbin/*
