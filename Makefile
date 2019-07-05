@@ -77,7 +77,7 @@ ifeq ($(PENDINGCOMMIT), 1)
 endif
 
 # linux-package: builddir linux committed
-linux-package: builddir
+linux-package: builddir linux
 	cp -a ./tools/rpm/$(PACKAGENAME)/* ./build/packages/$(PACKAGENAME)/
 	cp ./build/linux/$(BINNAME) ./build/packages/$(PACKAGENAME)/usr/sbin/
 	fpm -s dir -t rpm -C ./build/packages/$(PACKAGENAME) --name $(PACKAGENAME) --rpm-os linux --version $(VERSION) --iteration $(BUILD) --exclude "*/.keepme"
