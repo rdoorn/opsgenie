@@ -5,6 +5,10 @@ import (
 )
 
 func (h handler) filterContains(query, timeStr string) error {
+
+	if timeStr == "" {
+		return fmt.Errorf("you must specify for how long this filter should be enabled (e.g. 1h30m or 1d)")
+	}
 	policyID, policyName, err := h.createPolicy("contains", query)
 	if err != nil {
 		return fmt.Errorf("create policy failed: %s", err)
@@ -12,5 +16,6 @@ func (h handler) filterContains(query, timeStr string) error {
 	return h.maintenanceCreate(policyID, policyName, timeStr)
 }
 
-func (h handler) filterRegex(query, timeStr string) {
+func (h handler) filterRegex(query, timeStr string) error {
+	return nil
 }

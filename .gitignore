@@ -12,6 +12,6 @@
 *.out
 
 .opscli
-opsginie
+opsgenie
 *.rpm
 build/**

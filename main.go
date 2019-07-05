@@ -90,9 +90,9 @@ func main() {
 		timeStr, restStr := parseArgs(arg[2:]...)
 		switch arg[2] {
 		case "regex":
-			h.filterRegex(restStr, timeStr)
+			err = h.filterRegex(restStr, timeStr)
 		default:
-			h.filterContains(restStr, timeStr)
+			err = h.filterContains(restStr, timeStr)
 		}
 	default:
 		help()
@@ -100,7 +100,8 @@ func main() {
 
 	if err != nil {
 		help()
-		log.Printf("Error: %s", err)
+		fmt.Printf("\nError: %s\n", err)
+		os.Exit(255)
 	}
 }
 
@@ -131,6 +132,4 @@ func help() {
 	//fmt.Printf("%s filter your filter delete - disable and delete a policy created with this cli\n", binary)
 
 	fmt.Printf("%s help                      - your looking at it\n", binary)
-
-	os.Exit(255)
 }
