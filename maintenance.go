@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os/user"
 	"time"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/maintenance"
@@ -10,22 +9,17 @@ import (
 
 func (h handler) maintenanceCreate(policyID, policyName, timeStr string) error {
 
-	user, err := user.Current()
-	if err != nil {
-		return err
-	}
-
 	// create maintenance
 	maintenanceClient, err := maintenance.NewClient(h.client)
 	if err != nil {
 		return fmt.Errorf("error occured while creating maintenance client")
 	}
 
-	startTime := time.Now()
+	startTime := time.Now().Add(-1 * time.Minute) // 1 minute earlier to ensure a quick start
 	endTime := addTime(time.Now(), timeStr)
 
 	_, err = maintenanceClient.Create(nil, &maintenance.CreateRequest{
-		Description: fmt.Sprintf("ops-cli filter %s by %s ", policyName, user.Username),
+		Description: fmt.Sprintf("policy %s enabled by %s ", policyName, h.config.Prefix),
 		Time: maintenance.Time{
 			Type:      maintenance.Schedule,
 			StartDate: &startTime,
@@ -43,6 +37,6 @@ func (h handler) maintenanceCreate(policyID, policyName, timeStr string) error {
 			},
 		},
 	})
-
+	fmt.Printf("Policy: %s is enabled for the next %s\n", policyName, timeStr)
 	return nil
 }

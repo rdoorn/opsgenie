@@ -3,12 +3,34 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
 )
+
+// policyList shows all the policies
+func (h handler) findPolicyByName(policyName string) (*policy.PolicyProps, error) {
+	//create a policy client
+	policyClient, err := policy.NewClient(h.client)
+
+	if err != nil {
+		return nil, fmt.Errorf("error occured while creating policy client")
+	}
+
+	result, err := policyClient.ListAlertPolicies(nil, &policy.ListAlertPoliciesRequest{TeamId: h.config.TeamID})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range result.Policies {
+		if r.Name == policyName {
+			return &r, nil
+		}
+	}
+
+	return nil, fmt.Errorf("policy not found")
+}
 
 // policyList shows all the policies
 func (h handler) policyList() error {
@@ -33,6 +55,16 @@ func (h handler) policyList() error {
 			enabled = "disabled"
 		}
 		fmt.Printf("%2d: [%8s] %s \n", id, enabled, r.Name)
+
+		/*
+			details, err := policyClient.GetAlertPolicy(nil, &policy.GetAlertPolicyRequest{Id: r.Id, TeamId: h.config.TeamID})
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("policy detail: tags%s\n", details.Tags)
+		*/
+
 	}
 
 	return nil
@@ -149,86 +181,58 @@ func (h handler) policyEnable(policyID int, timeStr string) error {
 	return nil
 }
 
-func filter2query(filter *og.Filter) (string, error) {
-	matchType := ""
-	switch filter.ConditionMatchType {
-	case og.MatchAll:
-		matchType = " AND "
-	case og.MatchAllConditions:
-		matchType = " AND "
-	case og.MatchAnyCondition:
-		matchType = " OR "
+// input: search key + search value
+// output: policyID, policyName, error
+func (h handler) createPolicy(key, value string) (string, string, error) {
+	//create a policy client
+	policyClient, err := policy.NewClient(h.client)
+	if err != nil {
+		return "", "", fmt.Errorf("error occured while creating policy client")
 	}
 
-	str := []string{}
-	for _, f := range filter.Conditions {
-
-		var key string
-
-		switch f.Field {
-		case og.Message:
-			key = "message"
-		case og.Alias:
-			key = "alias"
-		case og.Description:
-			key = "description"
-		case og.Source:
-			key = "source"
-		case og.Entity:
-			key = "entity"
-		case og.Tags:
-			key = "tags"
-		case og.Actions:
-			key = "actions"
-		case og.Details:
-			key = "details"
-		case og.Recipients:
-			key = "recipients"
-		case og.Teams:
-			key = "teams"
-		case og.Priority:
-			key = "priority"
-		case og.ExtraProperties:
-			key = f.Key
-		default:
-			return "", fmt.Errorf("unknown field in search result: %s", f.Field)
-		}
-
-		not := ""
-		if f.IsNot {
-			not = "NOT "
-		}
-
-		value := ""
-		expectedValue := escapeValue(f.ExpectedValue)
-		switch f.Operation {
-		case og.Contains:
-			value = fmt.Sprintf(": *%s*", expectedValue)
-		case og.Matches:
-			value = expectedValue
-		case og.StartsWith:
-			value = fmt.Sprintf(": %s*", expectedValue)
-		case og.EndsWith:
-			value = fmt.Sprintf(": %s*", expectedValue)
-		case og.IsEmpty:
-			value = ": \"\""
-		case og.GreaterThan:
-			value = fmt.Sprintf("> %s*", expectedValue)
-		case og.LessThan:
-			value = fmt.Sprintf("< %s*", expectedValue)
-		}
-
-		str = append(str, fmt.Sprintf("%s%s%s", not, key, value))
+	condition := og.Contains
+	searchKey := ""
+	switch key {
+	case "contains":
+		searchKey = "description"
+		condition = og.Contains
+	case "regex":
+		searchKey = "description"
+		condition = og.Matches
+	default:
+		return "", "", fmt.Errorf("unknown key: %s", key)
 	}
-	//date := time.Now().Add(-2 * time.Hour).Unix()
-	result := strings.Join(str, matchType)
 
-	return result, nil
-	//return fmt.Sprintf("%s AND createdAt > %d", result, date)
-	//return fmt.Sprintf("%s AND lastOccurredAt > %d", result, date)
-}
+	policyName := replaceNonAlphanum(fmt.Sprintf("%s %s %s: %s", h.config.Prefix, searchKey, key, value), "_")
+	if p, err := h.findPolicyByName(policyName); err == nil {
+		// policy already exists
+		return p.Id, p.Name, nil
+	}
 
-func escapeValue(v string) string {
-	v = strings.Replace(v, ":", "\\:", -1)
-	return v
+	req := policy.CreateAlertPolicyRequest{
+		MainFields: policy.MainFields{
+			PolicyType:        "alert",
+			Name:              policyName,
+			Enabled:           false,
+			PolicyDescription: "created by ops-cli",
+			TeamId:            h.config.TeamID,
+			Filter: &og.Filter{
+				ConditionMatchType: og.MatchAllConditions,
+				Conditions: []og.Condition{
+					og.Condition{
+						Operation:     condition,
+						Field:         og.Description,
+						ExpectedValue: value,
+					}},
+			},
+		},
+		Message: "{{message}}",
+		Tags:    []string{"filtered"},
+	}
+	req.TeamId = h.config.TeamID
+
+	res, err := policyClient.CreateAlertPolicy(nil, &req)
+
+	return res.Id, res.Name, err
+
 }

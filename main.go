@@ -18,18 +18,17 @@ type handler struct {
 
 func main() {
 	arg := os.Args
-	if len(arg) == 1 {
+	if arg == nil || len(arg) == 1 {
 		help()
 	}
 
-	config, err := findConfig(configName)
+	config, err := findConfig()
 	if err != nil {
 		log.Fatalf("error reading config: %s", err)
 	}
 
 	h := &handler{
-		//client: &client.Config{ApiKey: config.ApiKey, LogLevel: logrus.WarnLevel},
-		client: &client.Config{ApiKey: config.ApiKey, LogLevel: logrus.DebugLevel},
+		client: &client.Config{ApiKey: config.ApiKey, LogLevel: logrus.WarnLevel},
 		config: config,
 	}
 
@@ -56,7 +55,15 @@ func main() {
 		case "list":
 			err = h.alertList(timeStr)
 		case "ack":
-			// TODO
+			if len(arg) > 3 {
+				if arg[3] == "all" {
+					err = h.alertAll()
+				} else {
+					err = h.alertAck(id)
+				}
+			} else {
+				help()
+			}
 		default:
 			help()
 		}
@@ -95,101 +102,18 @@ func main() {
 		help()
 		log.Printf("Error: %s", err)
 	}
-
-	/*
-		switch arg[1] {
-		case "list":
-			timeStr, _ := parseArgs(arg[1:]...)
-			if timeStr == "" {
-				timeStr = "1d"
-			}
-
-			switch arg[2] {
-			case "filters":
-				fallthrough
-			case "policies":
-				h.listPolicies()
-			case "alerts":
-				h.listAlerts(timeStr)
-			}
-
-		case "help":
-			help()
-
-		case "test":
-			timeStr, _ := parseArgs(arg[1:]...)
-			if timeStr == "" {
-				timeStr = "1d"
-			}
-
-			if len(arg) < 3 {
-				help()
-			}
-			policyID, err := strconv.Atoi(arg[3])
-			if err != nil {
-				log.Printf("invalid policy ID: %s expected a number", arg[3])
-			}
-
-			switch arg[2] {
-			case "filter":
-				fallthrough
-			case "policy":
-				h.testPolicy(policyID, timeStr)
-			}
-
-		case "filter":
-			timeStr, filter := parseArgs(arg[2:]...)
-			log.Printf("filter: '%s' for %s\n", filter, timeStr)
-
-		case "enable":
-			timeStr, _ := parseArgs(arg[2:]...)
-
-			if len(arg) < 3 {
-				help()
-			}
-			policyID, err := strconv.Atoi(arg[3])
-			if err != nil {
-				log.Printf("invalid policy ID: %s expected a number", arg[3])
-			}
-
-			switch arg[2] {
-			case "filter":
-				fallthrough
-			case "policy":
-				h.enablePolicy(policyID, timeStr)
-			}
-
-		case "disable":
-			if len(arg) < 3 {
-				help()
-			}
-			policyID, err := strconv.Atoi(arg[3])
-			if err != nil {
-				log.Printf("invalid policy ID: %s expected a number", arg[3])
-			}
-
-			switch arg[2] {
-			case "filter":
-				fallthrough
-			case "policy":
-				h.disablePolicy(policyID)
-			}
-
-		default:
-			log.Printf("unknown parameter: %s", arg[1])
-		}
-	*/
-
 }
 
 func help() {
 	arg := os.Args
 	binary := strings.Split(arg[0], "/")[1]
 
-	fmt.Printf("%s alert list               - list all alerts\n", binary)
-	fmt.Printf("%s alert list 5h            - list all alerts in the past 5 hours\n", binary)
+	fmt.Printf("%s alert list                - list all alerts\n", binary)
+	fmt.Printf("%s alert list 5h             - list all alerts in the past 5 hours\n", binary)
+	fmt.Printf("%s alert ack 1               - acknowledge alert number 1\n", binary)
+	fmt.Printf("%s alert ack all             - acknowledge all outstanding alert\n", binary)
 
-	fmt.Printf("%s policy list             - list all policies\n", binary)
+	fmt.Printf("%s policy list               - list all policies\n", binary)
 	fmt.Printf("%s policy test 1             - see what would match policy 1 (use 'ops list policies' to find the number)\n", binary)
 	fmt.Printf("%s policy test 1 5m          - see what would match policy 1 in the last 5 minutes\n", binary)
 
@@ -198,6 +122,7 @@ func help() {
 	fmt.Printf("%s policy disable 1          - enable policy 1 for 1 hour\n", binary)
 
 	fmt.Printf("%s filter your filter 1h30m  - create a policy and enable it for 1 hour and 30 minutes\n", binary)
+	//fmt.Printf("%s filter your filter delete - disable and delete a policy created with this cli\n", binary)
 
 	fmt.Printf("%s help                      - your looking at it\n", binary)
 

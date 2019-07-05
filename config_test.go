@@ -7,7 +7,7 @@ import (
 )
 
 func TestFindConfig(t *testing.T) {
-	config, err := findConfig(configName)
+	config, err := findConfig()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, config.TeamID)
 }
