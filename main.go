@@ -121,22 +121,22 @@ func help() {
 		binary = p[0]
 	}
 
-	fmt.Printf("%s alert list                - list all alerts\n", binary)
-	fmt.Printf("%s alert list 5h             - list all alerts in the past 5 hours\n", binary)
-	fmt.Printf("%s alert ack 1               - acknowledge alert number 1\n", binary)
-	fmt.Printf("%s alert ack all             - acknowledge all outstanding alert\n", binary)
+	fmt.Printf("%s alert list                                       - list all alerts\n", binary)
+	fmt.Printf("%s alert list 5h                                    - list all alerts in the past 5 hours\n", binary)
+	fmt.Printf("%s alert ack 1                                      - acknowledge alert number 1\n", binary)
+	fmt.Printf("%s alert ack all                                    - acknowledge all outstanding alert\n", binary)
 
-	fmt.Printf("%s policy list               - list all policies\n", binary)
-	fmt.Printf("%s policy test 1             - see what would match policy 1 (use 'ops list policies' to find the number)\n", binary)
-	fmt.Printf("%s policy test 1 5m          - see what would match policy 1 in the last 5 minutes\n", binary)
+	fmt.Printf("%s policy list                                      - list all policies\n", binary)
+	fmt.Printf("%s policy test 1                                    - see what would match policy 1 (use 'ops list policies' to find the number)\n", binary)
+	fmt.Printf("%s policy test 1 5m                                 - see what would match policy 1 in the last 5 minutes\n", binary)
 
-	fmt.Printf("%s policy enable 1           - enable policy 1 \n", binary)
-	fmt.Printf("%s policy enable 1 1h        - enable policy 1 for 1 hour\n", binary)
-	fmt.Printf("%s policy disable 1          - enable policy 1 for 1 hour\n", binary)
+	fmt.Printf("%s policy enable 1                                  - enable policy 1 \n", binary)
+	fmt.Printf("%s policy enable 1 1h                               - enable policy 1 for 1 hour\n", binary)
+	fmt.Printf("%s policy disable 1                                 - enable policy 1 for 1 hour\n", binary)
 
-	fmt.Printf("%s filter your filter 1h30m  - create a policy and enable it for 1 hour and 30 minutes\n", binary)
+	fmt.Printf("%s filter your filter 1h30m                         - create a policy and enable it for 1 hour and 30 minutes\n", binary)
 	fmt.Printf("%s filter match '(myhost01[123]|myhost02[123])' 1d  - create a regular expression match \n", binary)
 	//fmt.Printf("%s filter your filter delete - disable and delete a policy created with this cli\n", binary)
 
-	fmt.Printf("%s help                      - your looking at it\n", binary)
+	fmt.Printf("%s help                                             - your looking at it\n", binary)
 }
