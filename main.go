@@ -106,7 +106,13 @@ func main() {
 
 func help() {
 	arg := os.Args
-	binary := strings.Split(arg[0], "/")[1]
+	p := strings.Split(arg[0], "/")
+	var binary string
+	if len(p)-1 > 0 {
+		binary = p[1]
+	} else {
+		binary = p[0]
+	}
 
 	fmt.Printf("%s alert list                - list all alerts\n", binary)
 	fmt.Printf("%s alert list 5h             - list all alerts in the past 5 hours\n", binary)
