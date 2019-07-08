@@ -55,7 +55,7 @@ func main() {
 		// alert ack 1
 		switch arg[2] {
 		case "list":
-			err = h.alertList(timeStr)
+			_, err = h.alertList(timeStr)
 		case "ack":
 			if len(arg) > 3 {
 				if arg[3] == "all" {

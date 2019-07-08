@@ -69,22 +69,24 @@ func filter2query(filter *og.Filter) (string, error) {
 		}
 
 		value := ""
-		expectedValue := escapeValue(f.ExpectedValue)
+		//expectedValue := escapeValue(f.ExpectedValue)
+		expectedValue := f.ExpectedValue
 		switch f.Operation {
 		case og.Contains:
-			value = fmt.Sprintf(": *%s*", expectedValue)
+			value = fmt.Sprintf(": %s", expectedValue)
 		case og.Matches:
+			return "", fmt.Errorf("Sorry, we cannot test policies with regular expresions")
 			value = expectedValue
 		case og.StartsWith:
-			value = fmt.Sprintf(": %s*", expectedValue)
+			value = fmt.Sprintf(": %s", expectedValue)
 		case og.EndsWith:
-			value = fmt.Sprintf(": %s*", expectedValue)
+			value = fmt.Sprintf(": %s", expectedValue)
 		case og.IsEmpty:
 			value = ": \"\""
 		case og.GreaterThan:
-			value = fmt.Sprintf("> %s*", expectedValue)
+			value = fmt.Sprintf("> %s", expectedValue)
 		case og.LessThan:
-			value = fmt.Sprintf("< %s*", expectedValue)
+			value = fmt.Sprintf("< %s", expectedValue)
 		}
 
 		str = append(str, fmt.Sprintf("%s%s%s", not, key, value))

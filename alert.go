@@ -8,7 +8,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/alert"
 )
 
-func (h handler) alertList(timeframe string) error {
+func (h handler) alertList(timeframe string) (int, error) {
 	// only add time filter, if a time has been specified
 	var query string
 	if timeframe != "" {
@@ -19,15 +19,15 @@ func (h handler) alertList(timeframe string) error {
 	return h.listAlertsQuery(query)
 }
 
-func (h handler) listAlertsQuery(query string) error {
+func (h handler) listAlertsQuery(query string) (int, error) {
 	alertClient, err := alert.NewClient(h.client)
 	if err != nil {
-		return fmt.Errorf("error occured while creating alert client")
+		return 0, fmt.Errorf("error occured while creating alert client")
 	}
 
 	alertResult, err := alertClient.List(nil, &alert.ListAlertRequest{Query: query})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	for i, a := range alertResult.Alerts {
@@ -49,7 +49,7 @@ func (h handler) listAlertsQuery(query string) error {
 	if len(alertResult.Alerts) == 0 {
 		fmt.Printf("no alerts matched or found\n")
 	}
-	return nil
+	return len(alertResult.Alerts), nil
 }
 
 func (h handler) findAlertByID(id int) (*alert.Alert, error) {

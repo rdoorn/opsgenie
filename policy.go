@@ -84,7 +84,7 @@ func (h handler) policyTest(policyID int, timeframe string) error {
 		return err
 	}
 
-	if len(result.Policies) < policyID {
+	if len(result.Policies)-1 < policyID {
 		return fmt.Errorf("policy %d not found\n", policyID)
 	}
 
@@ -110,7 +110,11 @@ func (h handler) policyTest(policyID int, timeframe string) error {
 		query = fmt.Sprintf("(%s) AND createdAt > %d", query, history.Unix())
 	}
 
-	return h.listAlertsQuery(query)
+	count, err := h.listAlertsQuery(query)
+	if count == 0 {
+		fmt.Printf("\nIf your filter does not do what you expect, you may test it manually at: https://schubergphilis.app.opsgenie.com/alert/list\n")
+	}
+	return err
 }
 
 func (h handler) policyDisable(policyID int) error {
