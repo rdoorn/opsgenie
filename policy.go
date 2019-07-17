@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/opsgenie/opsgenie-go-sdk-v2/maintenance"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
 )
@@ -36,7 +37,6 @@ func (h handler) findPolicyByName(policyName string) (*policy.PolicyProps, error
 func (h handler) policyList() error {
 	//create a policy client
 	policyClient, err := policy.NewClient(h.client)
-
 	if err != nil {
 		return fmt.Errorf("error occured while creating policy client")
 	}
@@ -46,6 +46,28 @@ func (h handler) policyList() error {
 		return err
 	}
 
+	maintenanceList, err := h.maintananceList(maintenance.NonExpired)
+	if err != nil {
+		return err
+	}
+
+	maintenanceEnabledList := []string{}
+	now := time.Now()
+	for _, y := range maintenanceList.Maintenances {
+		if y.Time.EndDate.After(now) {
+			mdetails, err := h.maintenanceGet(y.Id)
+			if err != nil {
+				continue
+			}
+			for _, mr := range mdetails.Results {
+				if mr.State == maintenance.Enabled {
+					maintenanceEnabledList = append(maintenanceEnabledList, mr.Entity.Id)
+				}
+			}
+		}
+	}
+
+	tag := ""
 	fmt.Printf("Policies:\n")
 	for id, r := range result.Policies {
 		enabled := ""
@@ -53,8 +75,15 @@ func (h handler) policyList() error {
 			enabled = "enabled"
 		} else {
 			enabled = "disabled"
+			for _, m := range maintenanceEnabledList {
+				if m == r.Id {
+					enabled = "enabled"
+					tag = "(maintenance)"
+				}
+			}
 		}
-		fmt.Printf("%2d: [%8s] %s \n", id, enabled, r.Name)
+
+		fmt.Printf("%2d: [%8s] %s %s\n", id, enabled, r.Name, tag)
 
 		/*
 			details, err := policyClient.GetAlertPolicy(nil, &policy.GetAlertPolicyRequest{Id: r.Id, TeamId: h.config.TeamID})
@@ -203,6 +232,12 @@ func (h handler) createPolicy(key, value string) (string, string, error) {
 	case "regex":
 		searchKey = "description"
 		condition = og.Matches
+		if value[:1] != "^" {
+			value = fmt.Sprintf(".*%s", value)
+		}
+		if value[len(value)-1:] != "$" {
+			value = fmt.Sprintf("%s.*", value)
+		}
 	default:
 		return "", "", fmt.Errorf("unknown key: %s", key)
 	}

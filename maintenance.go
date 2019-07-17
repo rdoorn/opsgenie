@@ -40,3 +40,21 @@ func (h handler) maintenanceCreate(policyID, policyName, timeStr string) error {
 	fmt.Printf("Policy: %s is enabled for the next %s\n", policyName, timeStr)
 	return nil
 }
+
+func (h handler) maintananceList(stype maintenance.StatusType) (*maintenance.ListResult, error) {
+	maintenanceClient, err := maintenance.NewClient(h.client)
+	if err != nil {
+		return nil, fmt.Errorf("error occured while creating policy client")
+	}
+	//maintenance, err := maintenance.ListRequest(nil, &maintenance.ListRequest{TeamId: h.config.TeamID})
+	return maintenanceClient.List(nil, &maintenance.ListRequest{Type: stype})
+}
+
+func (h handler) maintenanceGet(id string) (*maintenance.GetResult, error) {
+	maintenanceClient, err := maintenance.NewClient(h.client)
+	if err != nil {
+		return nil, fmt.Errorf("error occured while creating policy client")
+	}
+	//maintenance, err := maintenance.ListRequest(nil, &maintenance.ListRequest{TeamId: h.config.TeamID})
+	return maintenanceClient.Get(nil, &maintenance.GetRequest{Id: id})
+}
