@@ -247,12 +247,13 @@ func (h handler) createPolicy(key, value string) (string, string, error) {
 		// policy already exists
 		return p.Id, p.Name, nil
 	}
+	f := false
 
 	req := policy.CreateAlertPolicyRequest{
 		MainFields: policy.MainFields{
 			PolicyType:        "alert",
 			Name:              policyName,
-			Enabled:           false,
+			Enabled:           &f,
 			PolicyDescription: "created by ops-cli",
 			TeamId:            h.config.TeamID,
 			Filter: &og.Filter{

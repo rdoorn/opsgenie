@@ -64,7 +64,7 @@ func filter2query(filter *og.Filter) (string, error) {
 		}
 
 		not := ""
-		if f.IsNot {
+		if f.IsNot != nil && *f.IsNot == true {
 			not = "NOT "
 		}
 
