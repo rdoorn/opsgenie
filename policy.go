@@ -54,7 +54,7 @@ func (h handler) policyList() error {
 	maintenanceEnabledList := []string{}
 	now := time.Now()
 	for _, y := range maintenanceList.Maintenances {
-		if y.Time.EndDate.After(now) {
+		if y.Status != "cancelled" && y.Time.EndDate != nil && y.Time.EndDate.After(now) {
 			mdetails, err := h.maintenanceGet(y.Id)
 			if err != nil {
 				continue

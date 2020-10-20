@@ -127,7 +127,7 @@ func help() {
 	fmt.Printf("%s alert ack all                                    - acknowledge all outstanding alert\n", binary)
 
 	fmt.Printf("%s policy list                                      - list all policies\n", binary)
-	fmt.Printf("%s policy test 1                                    - see what would match policy 1 (use 'ops list policies' to find the number)\n", binary)
+	fmt.Printf("%s policy test 1                                    - see what would match policy 1 (use 'ops policy list' to find the number)\n", binary)
 	fmt.Printf("%s policy test 1 5m                                 - see what would match policy 1 in the last 5 minutes\n", binary)
 
 	fmt.Printf("%s policy enable 1                                  - enable policy 1 \n", binary)
