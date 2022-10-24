@@ -49,6 +49,12 @@ func main() {
 	timeStr, _ := parseArgs(arg[3:]...)
 
 	switch arg[1] {
+	case "encrypt":
+		encText, err := Encrypt(arg[2], MySecret)
+		if err != nil {
+			fmt.Println("error encrypting your classified text: ", err)
+		}
+		fmt.Println(encText)
 	case "alert":
 		// alert list
 		// alert list 5h

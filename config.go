@@ -16,16 +16,16 @@ const configName = ".opscli"
 const configName2 = "opscli.config"
 
 type Config struct {
-	ApiKey   string
-	TeamID   string
-	Timezone string
-	timeZone *time.Location
-	Prefix   string
+	ApiKey          string
+	ApiKeyEncrypted string
+	TeamID          string
+	Timezone        string
+	timeZone        *time.Location
+	Prefix          string
 }
 
 func readConfig(fileName string) (*Config, error) {
 	c := &Config{}
-
 	yamlFile, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("yamlFile.Get err   #%v ", err)
@@ -46,6 +46,14 @@ func readConfig(fileName string) (*Config, error) {
 	}
 
 	c.Prefix = fmt.Sprintf("%s_CLI", strings.ToUpper(user.Username))
+
+	if c.ApiKeyEncrypted != "" {
+		decText, err := Decrypt(c.ApiKeyEncrypted, MySecret)
+		if err != nil {
+			fmt.Println("error decrypting key: ", err)
+		}
+		c.ApiKey = string(decText)
+	}
 
 	return c, nil
 }

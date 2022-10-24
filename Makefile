@@ -95,10 +95,11 @@ docker-scratch:
 	docker build -t ops-scratch -f build/docker/Dockerfile.scratch .
 
 deps: ## Updates the vendored Go dependencies
-	@dep ensure -v
+	go mod vendor
 
 updatedeps: ## Updates the vendored Go dependencies
-	@dep ensure -update
+	go get -u ./...
+	go mod vendor
 
 
 #authors:
