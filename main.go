@@ -29,7 +29,7 @@ func main() {
 	}
 
 	h := &handler{
-		client: &client.Config{ApiKey: config.ApiKey, LogLevel: logrus.WarnLevel},
+		client: &client.Config{ApiKey: config.ApiKey, LogLevel: logrus.ErrorLevel},
 		config: config,
 	}
 
